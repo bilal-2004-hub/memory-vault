@@ -9,18 +9,47 @@ if (!cached) {
 
 let mongoMemoryServer;
 
+const ensureCollectionsAndIndexes = async (conn) => {
+  try {
+    const db = conn.connection.db;
+    const existingCollections = await db.listCollections().toArray();
+    const existingNames = existingCollections.map((c) => c.name);
+
+    // Safely create collections if they don't already exist (preserves existing data)
+    const requiredCollections = ['users', 'memories'];
+    for (const name of requiredCollections) {
+      if (!existingNames.includes(name)) {
+        await db.createCollection(name);
+        console.log(`Created MongoDB collection: ${name}`);
+      }
+    }
+
+    // Build/sync indexes safely
+    const User = require('../models/User');
+    const Memory = require('../models/Memory');
+    await Promise.all([
+      User.createIndexes().catch((err) => console.warn('User index creation notice:', err.message)),
+      Memory.createIndexes().catch((err) => console.warn('Memory index creation notice:', err.message)),
+    ]);
+  } catch (error) {
+    console.warn('Collection/index check notice:', error.message);
+  }
+};
+
 const connectDB = async () => {
   if (cached.conn) {
     return cached.conn;
   }
 
-  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/memory-vault';
+  // Support both MONGODB_URI and MONGO_URI
+  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/memory-vault';
 
   if (!cached.promise) {
     cached.promise = mongoose
       .connect(mongoUri)
-      .then((conn) => {
-        console.log(`MongoDB connected: ${conn.connection.host}`);
+      .then(async (conn) => {
+        console.log(`MongoDB connected: ${conn.connection.host} (Database: ${conn.connection.name})`);
+        await ensureCollectionsAndIndexes(conn);
         return conn;
       })
       .catch(async (error) => {
@@ -40,7 +69,8 @@ const connectDB = async () => {
             instance: { dbPath },
           });
           const conn = await mongoose.connect(mongoMemoryServer.getUri());
-          console.log(`MongoDB connected via memory server: ${conn.connection.host}`);
+          console.log(`MongoDB connected via memory server: ${conn.connection.host} (Database: ${conn.connection.name})`);
+          await ensureCollectionsAndIndexes(conn);
           return conn;
         } catch (fallbackError) {
           console.error('MongoDB connection failed:', fallbackError.message);
@@ -59,6 +89,7 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+module.exports.ensureCollectionsAndIndexes = ensureCollectionsAndIndexes;
 module.exports.disconnectDB = async () => {
   await mongoose.disconnect();
   if (mongoMemoryServer) {
@@ -68,4 +99,3 @@ module.exports.disconnectDB = async () => {
   cached.conn = null;
   cached.promise = null;
 };
-

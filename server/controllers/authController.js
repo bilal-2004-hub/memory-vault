@@ -62,6 +62,8 @@ const signup = async (req, res, next) => {
         fullName: user.fullName,
         email: user.email,
         profilePicture: user.profilePicture,
+        bio: user.bio,
+        preferences: user.preferences,
       },
     });
   } catch (error) {
@@ -107,6 +109,8 @@ const login = async (req, res, next) => {
         fullName: user.fullName,
         email: user.email,
         profilePicture: user.profilePicture,
+        bio: user.bio,
+        preferences: user.preferences,
       },
     });
   } catch (error) {
@@ -124,6 +128,8 @@ const getMe = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePicture: user.profilePicture,
+      bio: user.bio,
+      preferences: user.preferences,
       createdAt: user.createdAt,
     },
   });

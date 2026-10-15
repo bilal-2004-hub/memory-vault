@@ -19,7 +19,7 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res, next) => {
   try {
-    const { fullName, email, profilePicture, currentPassword, newPassword } = req.body;
+    const { fullName, email, profilePicture, bio, preferences, notifications, theme, currentPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -49,7 +49,18 @@ const updateProfile = async (req, res, next) => {
       user.email = email.toLowerCase();
     }
 
-    if (profilePicture) user.profilePicture = profilePicture;
+    if (profilePicture !== undefined) user.profilePicture = profilePicture;
+    if (bio !== undefined) user.bio = bio;
+
+    if (!user.preferences) {
+      user.preferences = { theme: 'light', notifications: true };
+    }
+    if (preferences && typeof preferences === 'object') {
+      if (preferences.theme) user.preferences.theme = preferences.theme;
+      if (preferences.notifications !== undefined) user.preferences.notifications = Boolean(preferences.notifications);
+    }
+    if (notifications !== undefined) user.preferences.notifications = Boolean(notifications);
+    if (theme) user.preferences.theme = theme;
 
     if (currentPassword || newPassword) {
       if (!currentPassword || !newPassword) {
@@ -88,6 +99,8 @@ const updateProfile = async (req, res, next) => {
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         profilePicture: updatedUser.profilePicture,
+        bio: updatedUser.bio,
+        preferences: updatedUser.preferences,
       },
     });
   } catch (error) {
