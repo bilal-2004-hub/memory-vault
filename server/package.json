@@ -6,6 +6,7 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "db:init": "node scripts/initDatabase.js",
+    "db:seed": "node scripts/seedData.js",
     "migrate:images": "node scripts/migrateLocalImages.js"
   },
   "dependencies": {
