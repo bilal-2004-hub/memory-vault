@@ -7,7 +7,7 @@
     "client": "npm --prefix client run dev -- --host 0.0.0.0",
     "db:init": "npm --prefix server run db:init",
     "db:seed": "npm --prefix server run db:seed",
-    "build": "npm --prefix client install && npm --prefix client run build"
+    "build": "npm --prefix client install && npm --prefix client run build && node -e \"const fs = require('fs'); fs.cpSync('client/dist', 'dist', { recursive: true });\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
