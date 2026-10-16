@@ -41,9 +41,9 @@ app.get(['/', '/api', '/api/health'], (req, res) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/memories', memoryRoutes);
-app.use('/api/users', userRoutes);
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/memories', '/memories'], memoryRoutes);
+app.use(['/api/users', '/users'], userRoutes);
 
 app.use(errorMiddleware);
 
