@@ -24,6 +24,20 @@ const ensureCollectionsAndIndexes = async (conn) => {
       }
     }
 
+    // Safely drop any stale/foreign indexes (such as old studentId_1 from previous projects)
+    try {
+      const usersCollection = db.collection('users');
+      const userIndexes = await usersCollection.indexes();
+      for (const idx of userIndexes) {
+        if (idx.name === 'studentId_1') {
+          await usersCollection.dropIndex('studentId_1');
+          console.log('Successfully dropped stale index: studentId_1');
+        }
+      }
+    } catch (indexDropError) {
+      console.warn('Index clean check notice:', indexDropError.message);
+    }
+
     // Build/sync indexes safely
     const User = require('../models/User');
     const Memory = require('../models/Memory');
@@ -46,7 +60,9 @@ const connectDB = async () => {
 
   if (!cached.promise) {
     cached.promise = mongoose
-      .connect(mongoUri)
+      .connect(mongoUri, {
+        dbName: process.env.DB_NAME || 'memory-vault',
+      })
       .then(async (conn) => {
         console.log(`MongoDB connected: ${conn.connection.host} (Database: ${conn.connection.name})`);
         await ensureCollectionsAndIndexes(conn);
