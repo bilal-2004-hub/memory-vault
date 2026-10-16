@@ -34,10 +34,10 @@ app.use(
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-app.get(['/api', '/api/health'], (req, res) => {
+app.get(['/', '/api', '/api/health'], (req, res) => {
   res.json({
     success: true,
-    message: 'Memory Vault API is running',
+    message: 'Memory Vault API is running successfully on Vercel!',
   });
 });
 
