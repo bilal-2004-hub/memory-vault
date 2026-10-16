@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'No build step required for server'",
     "dev": "nodemon server.js",
     "start": "node server.js",
     "db:init": "node scripts/initDatabase.js",
